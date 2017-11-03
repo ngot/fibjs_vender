@@ -6,7 +6,12 @@ project(${name}_test)
 file(GLOB_RECURSE src_list "src/*.c*")
 add_executable(${name}_test ${src_list})
 
-set(BIN_DIR ${PROJECT_SOURCE_DIR}/../../../bin/${OS}_${ARCH}_${BUILD_TYPE})
+if(${ci} STREQUAL "ci")
+	set(BIN_DIR ${PROJECT_SOURCE_DIR}/../../bin/${OS}_${ARCH}_${BUILD_TYPE})
+else()
+	set(BIN_DIR ${PROJECT_SOURCE_DIR}/../../../bin/${OS}_${ARCH}_${BUILD_TYPE})
+endif()
+
 set(EXECUTABLE_OUTPUT_PATH ${BIN_DIR})
 
 if(NOT flags)

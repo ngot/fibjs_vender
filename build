@@ -11,6 +11,10 @@ usage()
 	echo "      Specifies the architecture for code generation."
 	echo "  clean: "
 	echo "      Clean the build folder."
+	echo "  ci: "
+	echo "      Specifies the environment is CI."
+	echo "  -j: enable make '-j' option."
+	echo "      if 'n' is not given, will set jobs to auto detected core count, otherwise n is used."
 	echo "  -h, --help:"
 	echo "      Print this message and exit."
 	echo ""
@@ -19,6 +23,7 @@ usage()
 
 HOST_OS=`uname`
 HOST_ARCH=`uname -m`
+CI=''
 
 case ${HOST_ARCH} in
 	i386|i686) HOST_ARCH="i386"
@@ -52,6 +57,10 @@ do
 			;;
 		release|debug|clean) BUILD_TYPE=$i
 			;;
+		ci) CI="ci"
+			;;
+		-j*) ENABLE_JOBS=1; BUILD_JOBS="${i#-j}"
+			;;
   --help|-h) usage
 			;;
 		  *) echo "illegal option $i"
@@ -59,6 +68,30 @@ do
 			;;
 	esac
 done
+
+if [ "$ENABLE_JOBS" = "1" -a "$BUILD_JOBS" = "" ]; then
+	#get cpu core count 
+	CPU_CORE=1
+	case ${HOST_OS} in
+		Darwin)
+			CPU_CORE=$(sysctl hw.ncpu | awk '{print $2}')
+			;;
+		Linux)
+			CPU_CORE=$(cat /proc/cpuinfo | grep processor | wc -l)
+			;;
+		Windows)
+			CPU_CORE=$(echo $NUMBER_OF_PROCESSORS)
+			;;
+	esac
+	echo "host machine has ${CPU_CORE} core"
+
+	if [ "$CPU_CORE" = "1" ]; then
+		BUILD_JOBS=""
+	else
+		# set build jobs with cpu core count
+		BUILD_JOBS=${CPU_CORE}
+	fi
+fi
 
 if [ $TARGET_ARCH != $HOST_ARCH ] || [ $TARGET_OS != $HOST_OS ]; then
 	case $TARGET_ARCH in
@@ -129,10 +162,20 @@ fi
 
 VENDER_PATH=`pwd`
 OUT_PATH=${VENDER_PATH}/../out
+LIBS_PATH=./bin
+
+if [ ${CI} = "ci" ]; then
+	OUT_PATH=./out
+	echo "Building on ci environment."
+fi
 
 if [ ${BUILD_TYPE} = 'clean' ]; then
 	if [ -e "${OUT_PATH}" ]; then
 		rm -rf ${OUT_PATH}/${TARGET_OS}_*
+	fi
+
+	if [ -e "${LIBS_PATH}" ]; then
+		rm -rf ${LIBS_PATH}
 	fi
 
 	exit 0
@@ -186,7 +229,7 @@ do
 
 	cd ${lib}
 
-	cmake -DBUILD_TYPE=${BUILD_TYPE} -DBUILD_OPTION="${BUILD_OPTION}" -Dname=${lib} ${VENDER_PATH}/${lib} > CMake.log
+	cmake -DBUILD_TYPE=${BUILD_TYPE} -DBUILD_OPTION="${BUILD_OPTION}" -Dname=${lib} -Dci=${CI} ${VENDER_PATH}/${lib} > CMake.log
 	if [ $? != 0 ]; then
 		exit 1
 	fi
@@ -214,7 +257,7 @@ do
 
 		cd ${lib}_test
 
-		cmake -DBUILD_TYPE=${BUILD_TYPE} -DBUILD_OPTION="${BUILD_OPTION}" -Dname=${lib} ${VENDER_PATH}/${lib}/test > CMake.log
+		cmake -DBUILD_TYPE=${BUILD_TYPE} -DBUILD_OPTION="${BUILD_OPTION}" -Dname=${lib} -Dci=${CI} ${VENDER_PATH}/${lib}/test > CMake.log
 		if [ $? != 0 ]; then
 			exit 1
 		fi

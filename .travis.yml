@@ -1,0 +1,51 @@
+dist: trusty
+language: cpp
+services:
+  - docker
+matrix:
+  include:
+    - os: osx
+      osx_image: xcode9
+      env:
+        - ARCH=amd64
+    - os: osx
+      osx_image: xcode9
+      env:
+        - ARCH=i386
+    - os: linux
+      env:
+        - ARCH=amd64
+    - os: linux
+      env:
+        - ARCH=i386
+    - os: linux
+      env:
+        - ARCH=arm
+    - os: linux
+      env:
+        - ARCH=arm64
+    - os: linux
+      env:
+        - ARCH=mips
+    - os: linux
+      env:
+        - ARCH=mips64
+before_install:
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      rvm install ruby-2.4.0;
+      rvm --default use 2.4.0;
+      ruby -v;
+      brew update;
+    fi
+install:
+  - if [[ "$TRAVIS_OS_NAME" == "linux" ]]; then
+      docker pull fibjs/build-env:latest;
+    fi
+  - if [[ "$TRAVIS_OS_NAME" == "osx" ]]; then
+      brew install xz;
+    fi
+script:
+  - echo "${ARCH}"
+  - ./.travis/build.sh
+  - ls -la out
+  - ls -la bin
