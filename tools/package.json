@@ -1,0 +1,6 @@
+{
+  "dependencies": {
+    "@fibjs/copy": "^1.1.0",
+    "@fibjs/mkdirp": "^1.0.1"
+  }
+}

@@ -11,6 +11,8 @@ usage()
 	echo "      Specifies the architecture for code generation."
 	echo "  clean: "
 	echo "      Clean the build folder."
+	echo "  -j: enable make '-j' option."
+	echo "      if 'n' is not given, will set jobs to auto detected core count, otherwise n is used."
 	echo "  -h, --help:"
 	echo "      Print this message and exit."
 	echo ""
@@ -52,7 +54,9 @@ do
 			;;
 		release|debug|clean) BUILD_TYPE=$i
 			;;
-  --help|-h) usage
+		-j*) ENABLE_JOBS=1; BUILD_JOBS="${i#-j}"
+			;;
+  	--help|-h) usage
 			;;
 		  *) echo "illegal option $i"
 			usage
@@ -120,6 +124,30 @@ if [ $TARGET_ARCH != $HOST_ARCH ] || [ $TARGET_OS != $HOST_OS ]; then
 			fi
 			;;
 	esac
+fi
+
+if [ "$ENABLE_JOBS" = "1" -a "$BUILD_JOBS" = "" ]; then
+	#get cpu core count 
+	CPU_CORE=1
+	case ${HOST_OS} in
+		Darwin)
+			CPU_CORE=$(sysctl hw.ncpu | awk '{print $2}')
+			;;
+		Linux)
+			CPU_CORE=$(cat /proc/cpuinfo | grep processor | wc -l)
+			;;
+		Windows)
+			CPU_CORE=$(echo $NUMBER_OF_PROCESSORS)
+			;;
+	esac
+	echo "host machine has ${CPU_CORE} core"
+
+	if [ "$CPU_CORE" = "1" ]; then
+		BUILD_JOBS=""
+	else
+		# set build jobs with cpu core count
+		BUILD_JOBS=${CPU_CORE}
+	fi
 fi
 
 if [ "$BUILD_PREFIX" != "" ]; then
