@@ -34,9 +34,8 @@ if (process.platform !== 'win32') {
   const execCmd = path.join(venderPath, 'build');
   fs.chmod(execCmd, 0700);
   process.chdir(venderPath);
-  process.run(execCmd, ['-j']);
+  process.run('./build', ['-j']);
 } else {
   process.chdir(prjRootPath);
-  const execCmd = path.join(prjRootPath, 'build');
-  process.run(execCmd, []);
+  process.run('cmd', ['/c', 'build.cmd']);
 }
