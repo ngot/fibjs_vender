@@ -9424,6 +9424,8 @@ DEFINE_ERROR(RangeError, range_error)
 DEFINE_ERROR(ReferenceError, reference_error)
 DEFINE_ERROR(SyntaxError, syntax_error)
 DEFINE_ERROR(TypeError, type_error)
+DEFINE_ERROR(URIError, uri_error)
+DEFINE_ERROR(EvalError, eval_error)
 DEFINE_ERROR(Error, error)
 
 #undef DEFINE_ERROR

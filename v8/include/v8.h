@@ -6224,6 +6224,8 @@ class V8_EXPORT Exception {
   static Local<Value> ReferenceError(Local<String> message);
   static Local<Value> SyntaxError(Local<String> message);
   static Local<Value> TypeError(Local<String> message);
+  static Local<Value> URIError(Local<String> message);
+  static Local<Value> EvalError(Local<String> message);
   static Local<Value> Error(Local<String> message);
 
   /**

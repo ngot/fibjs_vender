@@ -760,6 +760,8 @@ class RuntimeCallTimer final {
   V(Uint32Array_New)                                       \
   V(Uint8Array_New)                                        \
   V(Uint8ClampedArray_New)                                 \
+  V(URIError_New)                                          \
+  V(EvalError_New)                                         \
   V(UnboundScript_GetId)                                   \
   V(UnboundScript_GetLineNumber)                           \
   V(UnboundScript_GetName)                                 \
